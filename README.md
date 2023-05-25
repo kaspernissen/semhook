@@ -31,3 +31,15 @@ Ensures all repositories are up to date
 Starhook with a configuration that syncs the repositories you want to run tests agains.
 
 Set the environment variable `SEMHOOK_REPO_ROOT=<rRepositories Directory>` from the output of `$ starhook config show`.
+
+
+## TODO
+
+- Format scanning output
+- Consider if options should be given to the scan
+- Initializing starhook remotely
+- list starhook configs and switch between them
+- cache results?
+
+
+Pieced together with the help of ChatGPT <3
