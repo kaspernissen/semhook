@@ -1,5 +1,5 @@
 # semhook
-Combining Semgrep and Starhook to do on demand scanning of multiple repositories
+Combining [Semgrep](https://github.com/returntocorp/semgrep) and [Starhook](https://github.com/fatih/starhook) to do on demand scanning of multiple repositories
 
 Semhook is a web application.
 It serves two endpoints:
