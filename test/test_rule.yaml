@@ -1,0 +1,8 @@
+rules:
+  - id: go-exec-command
+    languages:
+      - go
+    patterns:
+      - pattern: exec.Command(...)
+    message: Found exec command
+    severity: ERROR
