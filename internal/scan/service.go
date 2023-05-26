@@ -10,13 +10,13 @@ import (
 // Runs semgrep on all repositories cloned into the repoRoot directory
 // with the rule located at rulePath. The output of the run of each repo
 // is combined and returned as an *bytes.Reader.
-func scan(rulePath, repoRoot string) (string, error) {
-	var results []string
+func scan(rulePath, repoRoot string) (result, error) {
+	results := newResult("test")
 
 	// Get a list of all repositories in the repoRoot directory
 	repos, err := getRepositories(repoRoot)
 	if err != nil {
-		return "", err
+		return result{}, err
 	}
 
 	// Iterate over each repository and run semgrep
@@ -27,14 +27,15 @@ func scan(rulePath, repoRoot string) (string, error) {
 		// Run semgrep command and capture the output
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			return "", err
+			return result{}, err
 		}
-
-		// Append the result to the results slice
-		results = append(results, string(output))
+		err = results.addRepoResult(output)
+		if err != nil {
+			return result{}, err
+		}
 	}
 
-	return strings.Join(results, "\n"), nil
+	return results, nil
 }
 
 // Helper function to get a list of repositories in the repoRoot directory
