@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 // Runs semgrep on all repositories cloned into the repoRoot directory
@@ -25,7 +24,7 @@ func scan(rulePath, repoRoot string) (result, error) {
 		cmd := exec.Command("semgrep", "-f", rulePath, "--json", repo)
 
 		// Run semgrep command and capture the output
-		output, err := cmd.CombinedOutput()
+		output, err := cmd.Output()
 		if err != nil {
 			return result{}, err
 		}

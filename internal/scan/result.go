@@ -1,15 +1,17 @@
 package scan
 
+import "encoding/json"
+
 type result struct {
-	ruleName string
+	ruleName    string
 	repoResults []SemgrepResult
 }
 
 type SemgrepResult struct {
-	CheckID string   `json:"check_id"`
-	Path    string   `json:"path"`
-	Start   Position `json:"start"`
-	End     Position `json:"end"`
+	CheckID string    `json:"check_id"`
+	Path    string    `json:"path"`
+	Start   Position  `json:"start"`
+	End     Position  `json:"end"`
 	Extra   ExtraData `json:"extra"`
 }
 
@@ -50,16 +52,16 @@ type SemgrepOutput struct {
 
 func newResult(rule string) result {
 	return result{
-		ruleName: rule
+		ruleName: rule,
 	}
 }
 
-func (r *result) addRepoResult(semgrepOutput string) error { 
-	var output SemgrepOutput
-	err := json.Unmarshal([]byte(jsonStr), &output)
+func (r *result) addRepoResult(semgrepOutput []byte) error {
+	var output SemgrepResult
+	err := json.Unmarshal(semgrepOutput, &output)
 	if err != nil {
 		return err
 	}
-	r.repoResult = append(r.repoResult, output)
+	r.repoResults = append(r.repoResults, output)
 	return nil
 }
