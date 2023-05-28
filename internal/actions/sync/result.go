@@ -1,5 +1,7 @@
 package sync
 
+import "regexp"
+
 type SyncResult struct {
 	Cloned  []string `json:"cloned"`
 	Updated []string `json:"updated"`
@@ -7,20 +9,25 @@ type SyncResult struct {
 }
 
 func NewSyncResult(output []byte) (SyncResult, error) {
-	return SyncResult{}, nil
+	result := SyncResult{}
+
+	regexPattern := `(.*) is (updated|deleted|cloned)`
+	regex := regexp.MustCompile(regexPattern)
+
+	matches := regex.FindAllStringSubmatch(string(output), -1)
+	for _, match := range matches {
+		repoName := match[1]
+		action := match[2]
+
+		switch action {
+		case "cloned":
+			result.Cloned = append(result.Cloned, repoName)
+		case "updated":
+			result.Updated = append(result.Updated, repoName)
+		case "deleted":
+			result.Deleted = append(result.Deleted, repoName)
+		}
+	}
+
+	return result, nil
 }
-
-/*
-
-{"message":"Sync completed: querying for latest repositories ...
-last synced: 2 days ago
-updates found:
-  clone  :   0
-  update :   1
-  delete :   0
-cloned: 0 repositories (elapsed time: 250ns)
-updated: 1 repositories (elapsed time: 2.3528115s)
-deleted: 0 repositories (elapsed time: 166ns)
-  \"semhook\" is updated (last updated: 2 days ago)
-"}
-*/
