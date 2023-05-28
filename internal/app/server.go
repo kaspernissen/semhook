@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github/com/hoeg/semhook/internal/repo"
 	"github/com/hoeg/semhook/internal/scan"
 	"github/com/hoeg/semhook/internal/sync"
 	"log"
@@ -20,6 +21,7 @@ func Start() {
 
 	router.POST("/scan", scan.Handler(repoRoot))
 	router.GET("/sync", sync.Handler())
+	router.GET("/repo", repo.Handler())
 
 	svc := adaptors.NewHTTPService(&http.Server{
 		Addr:    fmt.Sprintf(":%s", port()),
