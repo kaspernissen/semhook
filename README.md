@@ -2,16 +2,18 @@
 Combining [Semgrep](https://github.com/returntocorp/semgrep) and [Starhook](https://github.com/fatih/starhook) to do on demand scanning of multiple repositories
 
 Semhook is a web application.
-It serves two endpoints:
+It serves the following endpoints:
 
 ```
 /scan
 ```
 
-and 
-
 ```
 /sync
+```
+
+```
+/repo
 ```
 
 ### /scan
@@ -35,7 +37,6 @@ Set the environment variable `SEMHOOK_REPO_ROOT=<rRepositories Directory>` from 
 
 ## TODO
 
-- Format scanning output
 - Consider if options should be given to the scan
 - Initializing starhook remotely
 - list starhook configs and switch between them
