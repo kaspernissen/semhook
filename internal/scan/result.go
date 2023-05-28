@@ -57,11 +57,13 @@ func newResult(rule string) result {
 }
 
 func (r *result) addRepoResult(semgrepOutput []byte) error {
-	var output SemgrepResult
+	var output SemgrepOutput
 	err := json.Unmarshal(semgrepOutput, &output)
 	if err != nil {
 		return err
 	}
-	r.repoResults = append(r.repoResults, output)
+	if len(output.Results) != 0 {
+		r.repoResults = append(r.repoResults, output.Results...)
+	}
 	return nil
 }
