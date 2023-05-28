@@ -3,7 +3,6 @@ package sync
 import (
 	"fmt"
 	"net/http"
-	"os/exec"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,8 +10,7 @@ import (
 func Handler() func(c *gin.Context) {
 	return func(c *gin.Context) {
 		// Execute the starhook binary with the "sync" argument
-		cmd := exec.Command("starhook", "sync", "--force=true")
-		result, err := cmd.CombinedOutput()
+		result, err := sync(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute starhook"})
 			return

@@ -34,14 +34,11 @@ func Handler(repoRoot string) func(c *gin.Context) {
 		}
 
 		// Execute the semgrep binary with the uploaded file
-		result, err := scan(rulePath, repoRoot)
+		result, err := scan(c.Request.Context(), rulePath, repoRoot)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute semgrep"})
 			return
 		}
-
-		// Process the output as needed
-		// For example, you can return it in the response
 
 		// Return a success response
 		c.JSON(http.StatusOK, gin.H{"scan_result": result})
