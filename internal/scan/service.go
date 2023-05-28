@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,13 +10,13 @@ import (
 // Runs semgrep on all repositories cloned into the repoRoot directory
 // with the rule located at rulePath. The output of the run of each repo
 // is combined and returned as an *bytes.Reader.
-func scan(rulePath, repoRoot string) (result, error) {
-	results := newResult("test")
+func scan(rulePath, repoRoot string) (Result, error) {
+	results := NewResult("test")
 
 	// Get a list of all repositories in the repoRoot directory
 	repos, err := getRepositories(repoRoot)
 	if err != nil {
-		return result{}, err
+		return Result{}, err
 	}
 
 	// Iterate over each repository and run semgrep
@@ -26,14 +27,15 @@ func scan(rulePath, repoRoot string) (result, error) {
 		// Run semgrep command and capture the output
 		output, err := cmd.Output()
 		if err != nil {
-			return result{}, err
+			return Result{}, err
 		}
+		fmt.Printf("repo: %s - result: %s\n", repo, output)
 		err = results.addRepoResult(output)
 		if err != nil {
-			return result{}, err
+			return Result{}, err
 		}
 	}
-
+	fmt.Printf("All: %+v", results)
 	return results, nil
 }
 

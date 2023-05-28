@@ -2,9 +2,9 @@ package scan
 
 import "encoding/json"
 
-type result struct {
-	ruleName    string
-	repoResults []SemgrepResult
+type Result struct {
+	RuleName    string
+	RepoResults []SemgrepResult
 }
 
 type SemgrepResult struct {
@@ -50,20 +50,20 @@ type SemgrepOutput struct {
 	Version string          `json:"version"`
 }
 
-func newResult(rule string) result {
-	return result{
-		ruleName: rule,
+func NewResult(rule string) Result {
+	return Result{
+		RuleName: rule,
 	}
 }
 
-func (r *result) addRepoResult(semgrepOutput []byte) error {
+func (r *Result) addRepoResult(semgrepOutput []byte) error {
 	var output SemgrepOutput
 	err := json.Unmarshal(semgrepOutput, &output)
 	if err != nil {
 		return err
 	}
 	if len(output.Results) != 0 {
-		r.repoResults = append(r.repoResults, output.Results...)
+		r.RepoResults = append(r.RepoResults, output.Results...)
 	}
 	return nil
 }
