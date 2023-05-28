@@ -1,6 +1,9 @@
 package sync
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 type SyncResult struct {
 	Cloned  []string `json:"cloned"`
@@ -16,7 +19,7 @@ func NewSyncResult(output []byte) (SyncResult, error) {
 
 	matches := regex.FindAllStringSubmatch(string(output), -1)
 	for _, match := range matches {
-		repoName := match[1]
+		repoName := strings.ReplaceAll(strings.TrimSpace(match[1]), "\"", "")
 		action := match[2]
 
 		switch action {
