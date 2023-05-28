@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,10 +15,6 @@ func Handler() func(c *gin.Context) {
 			return
 		}
 
-		// Process the output as needed
-		// For example, you can return it in the response
-
-		// Return a success response
-		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Sync completed: %s", result)})
+		c.JSON(http.StatusOK, gin.H{"sync": result})
 	}
 }
