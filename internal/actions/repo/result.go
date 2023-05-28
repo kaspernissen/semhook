@@ -16,6 +16,9 @@ func NewListResult(output []byte) ([]ListResult, error) {
 	orgMap := make(map[string][]string)
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
+		if strings.Contains(line, "==> ") {
+			break
+		}
 		if line != "" {
 			parts := strings.SplitN(line, "/", 2)
 			if len(parts) != 2 {

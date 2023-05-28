@@ -12,7 +12,8 @@ func TestRepoListOneOrg(t *testing.T) {
 	7 hoeg/intro-to-semgrep
 	8 hoeg/codeql-uboot
 	9 hoeg/aws-bbb
-   10 hoeg/exitnode`
+   10 hoeg/exitnode
+==> local 30 repositories (last synced: 4 hours ago)`
 
 	result, err := NewListResult([]byte(output))
 	if err != nil {
