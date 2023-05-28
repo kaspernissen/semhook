@@ -2,9 +2,9 @@ package app
 
 import (
 	"fmt"
-	"github/com/hoeg/semhook/internal/repo"
-	"github/com/hoeg/semhook/internal/scan"
-	"github/com/hoeg/semhook/internal/sync"
+	"github/com/hoeg/semhook/internal/actions/repo"
+	"github/com/hoeg/semhook/internal/actions/scan"
+	"github/com/hoeg/semhook/internal/actions/sync"
 	"log"
 	"net/http"
 	"os"
