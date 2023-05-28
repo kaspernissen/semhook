@@ -8,14 +8,28 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/g4s8/go-lifecycle/pkg/adaptors"
 	"github.com/g4s8/go-lifecycle/pkg/lifecycle"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func Start() {
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"POST", "GET"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "*"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 
 	repoRoot := repositoryRoot()
 
