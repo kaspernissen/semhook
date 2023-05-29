@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/Microsoft/go-winio v0.6.1
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/gin-contrib/cors v1.4.0
