@@ -1,264 +1,532 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>API Response Parser</title>
     <style>
-        /* CSS styles here */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #F7F8FA;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+      /* CSS styles here */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f8fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
 
-        h1 {
-            background-color: #FFFFFF;
-            color: #333;
-            padding: 20px 0;
-            text-align: center;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-        }
+      h1 {
+        background-color: #ffffff;
+        color: #333;
+        padding: 20px 0;
+        text-align: center;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+      }
 
-        ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 20px;
-            max-width: 800px;
-            margin: auto;
-        }
+      ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 20px;
+        max-width: 800px;
+        margin: auto;
+      }
 
-        li {
-            background-color: #FFFFFF;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            padding: 20px;
-            border-radius: 5px;
-        }
+      li {
+        background-color: #ffffff;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+        border-radius: 5px;
+      }
 
-        a {
-            color: #1a0dab;
-            text-decoration: none;
-        }
+      a {
+        color: #1a0dab;
+        text-decoration: none;
+      }
 
-        a:hover {
-            text-decoration: underline;
-        }
+      a:hover {
+        text-decoration: underline;
+      }
 
-        /* Highlight.js styles */
-        pre {
-            padding: 10px;
-            background-color: #f4f4f4;
-        }
+      /* Highlight.js styles */
+      pre {
+        padding: 10px;
+        background-color: #f4f4f4;
+      }
 
-        .hljs {
-            display: block;
-            overflow-x: auto;
-            padding: 0.5em;
-            color: #333;
-        }
+      .hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 0.5em;
+        color: #333;
+      }
 
-        /* CSS styles here */
-        .CodeMirror {
-            height: 400px; /* Adjust the height as desired */
-            border: 1px solid #ccc;
-            font-family: monospace;
-        }
+      /* CSS styles here */
+      .CodeMirror {
+        height: 400px; /* Adjust the height as desired */
+        border: 1px solid #ccc;
+        font-family: monospace;
+      }
 
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
 
-        .modal-content {
-            background-color: #fff;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 5px;
-            max-width: 600px;
-        }
+      .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 5px;
+        max-width: 600px;
+      }
 
-        .modal-spinner {
-            margin: 0 auto 10px;
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 2s linear infinite;
-        }
+      .modal-spinner {
+        margin: 0 auto 10px;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 2s linear infinite;
+      }
 
-        .list-item-header {
-            display: flex;
-            align-items: center;
-        }
+      .list-item-header {
+        display: flex;
+        align-items: center;
+      }
 
-        .list-item-header img {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-        }
+      .list-item-header img {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+      }
 
-        .list-item-content {
-            display: none;
-            margin-top: 10px;
-        }
+      .list-item-content {
+        display: none;
+        margin-top: 10px;
+      }
 
-        .list-item-content pre {
-            margin: 0;
-        }
+      .list-item-content pre {
+        margin: 0;
+      }
 
-        .list-item-content.active {
-            display: block;
-        }
+      .list-item-content.active {
+        display: block;
+      }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+      .history-container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+      }
+
+      .history-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .history-item {
+        margin-bottom: 10px;
+      }
+
+      .history-item button {
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     </style>
     <!-- Include CodeMirror styles and scripts -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css"
+    />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/yaml/yaml.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>RepoResults</h1>
     <form id="myForm">
-        <label for="ruleInput">Rule:</label>
-        <textarea id="ruleInput" name="rule"></textarea>
-        <br>
-        <input type="submit" value="Submit">
+      <label for="ruleInput">Rule:</label>
+      <textarea id="ruleInput" name="rule"></textarea>
+      <br />
+      <input type="submit" value="Submit" />
     </form>
 
     <ul id="results"></ul>
 
     <div id="modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-spinner"></div>
-            <p>Loading...</p>
-            <pre id="codeSnippet"></pre>
-        </div>
+      <div class="modal-content">
+        <div class="modal-spinner"></div>
+        <p>Loading...</p>
+        <pre id="codeSnippet"></pre>
+      </div>
+    </div>
+
+    <div class="history-container">
+      <h2>History</h2>
+      <ul id="historyList" class="history-list"></ul>
     </div>
 
     <script>
-        // Initialize CodeMirror
-        var editor = CodeMirror.fromTextArea(document.getElementById("ruleInput"), {
-            lineNumbers: true,
-            mode: "text/x-yaml", // Set the desired syntax highlighting mode
-            theme: "default" // Set the desired theme (optional)
+      // Initialize CodeMirror
+      var editor = CodeMirror.fromTextArea(
+        document.getElementById("ruleInput"),
+        {
+          lineNumbers: true,
+          mode: "text/x-yaml", // Set the desired syntax highlighting mode
+          theme: "default", // Set the desired theme (optional)
+        }
+      );
+
+      var modal = document.getElementById("modal");
+      var codeSnippet = document.getElementById("codeSnippet");
+      var historyList = document.getElementById("historyList");
+
+      var scanHistory = [];
+
+      // Load history from local storage
+      if (localStorage.getItem("scanHistory")) {
+        scanHistory = JSON.parse(localStorage.getItem("scanHistory"));
+        renderScanHistory();
+      }
+
+      document
+        .getElementById("myForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevents the form from submitting normally
+
+          var ruleValue = editor.getValue(); // Get the code from CodeMirror editor
+
+          // Perform validation if needed
+          if (!ruleValue) {
+            alert("Please enter a rule."); // Add your custom validation logic here
+            return;
+          }
+
+          // Create a file object from the text input value
+          var file = new File([ruleValue], "rule.txt", { type: "text/plain" });
+
+          // Create a FormData object and append the file to it
+          var formData = new FormData();
+          formData.append("rule", file);
+
+          // Show the modal spinner
+          modal.style.display = "block";
+
+          // AJAX request to send form data and receive response
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "http://localhost:8080/scan", true);
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              // Hide the modal spinner
+              modal.style.display = "none";
+
+              var response = xhr.responseText;
+              console.log(response); // You can do whatever you want with the response here
+              var responseData;
+              try {
+                responseData = JSON.parse(response);
+              } catch (error) {
+                console.error(error);
+                return;
+              }
+
+              // Clear the existing list
+              var resultListElement = document.getElementById("results");
+              resultListElement.innerHTML = "";
+
+              // Check if RepoResults is an array
+              if (Array.isArray(responseData.scan_result.RepoResults)) {
+                // Add list items to the list
+                responseData.scan_result.RepoResults.forEach(function (item) {
+                  // Get the lines that are found
+                  let lines = item.extra.lines;
+
+                  const base =
+                    "/Users/hoeg/Documents/security-research/hoeg.github/";
+                  const githubUrl = "https://github.com/hoeg";
+
+                  // Extract the repository name from the input path
+                  const repoIndex = item.path.indexOf("/", base.length);
+                  const repoName = item.path.substring(base.length, repoIndex);
+
+                  // Remove the base path and repository name from the input string
+                  const relativePath = item.path.substring(repoIndex + 1);
+
+                  // Create the GitHub URL
+                  const githubPath = `${githubUrl}/${repoName}/tree/master/${relativePath}#L${item.start.line}`;
+
+                  // Create list item header with the logo, repository name, and message
+                  let listItemHeader = document.createElement("div");
+                  listItemHeader.className = "list-item-header";
+                  let logoImg = document.createElement("img");
+                  logoImg.src = "search-logo.png"; // Replace with your search logo image URL
+                  listItemHeader.appendChild(logoImg);
+                  listItemHeader.innerHTML +=
+                    '<a href="' +
+                    githubPath +
+                    '" target="_blank">' +
+                    relativePath +
+                    "</a>  - " +
+                    item.extra.message;
+
+                  // Create list item content with the lines found
+                  let listItemContent = document.createElement("div");
+                  listItemContent.className = "list-item-content";
+
+                  let linesPre = document.createElement("pre");
+                  linesPre.textContent = lines;
+
+                  listItemContent.appendChild(linesPre);
+
+                  // Create the list item and append header and content
+                  let listItem = document.createElement("li");
+                  listItem.appendChild(listItemHeader);
+                  listItem.appendChild(listItemContent);
+
+                  // Add event listener to toggle the content visibility
+                  listItemHeader.addEventListener("click", function () {
+                    listItemContent.classList.toggle("active");
+                  });
+
+                  resultListElement.appendChild(listItem);
+                });
+
+                // Store the scanning result in history
+                addToHistory(ruleValue, responseData.scan_result.RepoResults);
+                renderHistory();
+              } else {
+                console.error("RepoResults is not an array.");
+              }
+            }
+          };
+          xhr.send(formData); // Send the FormData object as the request body
         });
 
-        var modal = document.getElementById("modal");
-        var codeSnippet = document.getElementById("codeSnippet");
+      function addToHistory(rule, results) {
+        scanHistory.unshift({ rule: rule, results: results });
 
-        document.getElementById("myForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevents the form from submitting normally
+        // Keep only the latest 5 scannings in history
+        if (scanHistory.length > 5) {
+          scanHistory.splice(5);
+        }
 
-            var ruleValue = editor.getValue(); // Get the code from CodeMirror editor
+        // Save history to local storage
+        localStorage.setItem("history", JSON.stringify(scanHistory));
+      }
 
-            // Perform validation if needed
-            if (!ruleValue) {
-                alert("Please enter a rule."); // Add your custom validation logic here
-                return;
+      function renderHistory() {
+        historyList.innerHTML = "";
+
+        scanHistory.forEach(function (item, index) {
+          let historyItem = document.createElement("li");
+          historyItem.className = "history-item";
+
+          let historyButton = document.createElement("button");
+          historyButton.textContent = "Scan " + (index + 1);
+          historyButton.addEventListener("click", function () {
+            // Load the rule from history into the editor
+            editor.setValue(item.rule);
+
+            // Perform the scan and display the results
+            triggerScan(item.rule, item.results);
+          });
+
+          historyItem.appendChild(historyButton);
+          historyList.appendChild(historyItem);
+        });
+      }
+
+      function triggerScan(rule, results) {
+        // Clear the existing list
+        var resultListElement = document.getElementById("results");
+        resultListElement.innerHTML = "";
+
+        // Add list items to the list
+        results.forEach(function (item) {
+          // Get the lines that are found
+          let lines = item.extra.lines;
+
+          const base = "/Users/hoeg/Documents/security-research/hoeg.github/";
+          const githubUrl = "https://github.com/hoeg";
+
+          // Extract the repository name from the input path
+          const repoIndex = item.path.indexOf("/", base.length);
+          const repoName = item.path.substring(base.length, repoIndex);
+
+          // Remove the base path and repository name from the input string
+          const relativePath = item.path.substring(repoIndex + 1);
+
+          // Create the GitHub URL
+          const githubPath = `${githubUrl}/${repoName}/tree/master/${relativePath}#L${item.start.line}`;
+
+          // Create list item header with the logo, repository name, and message
+          let listItemHeader = document.createElement("div");
+          listItemHeader.className = "list-item-header";
+          let logoImg = document.createElement("img");
+          logoImg.src = "search-logo.png"; // Replace with your search logo image URL
+          listItemHeader.appendChild(logoImg);
+          listItemHeader.innerHTML +=
+            '<a href="' +
+            githubPath +
+            '" target="_blank">' +
+            relativePath +
+            "</a>  - " +
+            item.extra.message;
+
+          // Create list item content with the lines found
+          let listItemContent = document.createElement("div");
+          listItemContent.className = "list-item-content";
+
+          let linesPre = document.createElement("pre");
+          linesPre.textContent = lines;
+
+          listItemContent.appendChild(linesPre);
+
+          // Create the list item and append header and content
+          let listItem = document.createElement("li");
+          listItem.appendChild(listItemHeader);
+          listItem.appendChild(listItemContent);
+
+          // Add event listener to toggle the content visibility
+          listItemHeader.addEventListener("click", function () {
+            listItemContent.classList.toggle("active");
+          });
+
+          resultListElement.appendChild(listItem);
+        });
+      }
+
+      function loadHistory(index) {
+        if (index >= 0 && index < scanHistory.length) {
+          // Load the rule from history into the editor
+          editor.setValue(scanHistory[index].rule);
+
+          // Use the saved results if available
+          if (scanHistory[index].results) {
+            triggerScan(scanHistory[index].rule, scanHistory[index].results);
+          } else {
+            // Perform the scan and display the results
+            performScan(scanHistory[index].rule);
+          }
+        }
+      }
+
+      function performScan(rule) {
+        // Create a file object from the rule
+        var file = new File([rule], "rule.txt", { type: "text/plain" });
+
+        // Create a FormData object and append the file to it
+        var formData = new FormData();
+        formData.append("rule", file);
+
+        // Show the modal spinner
+        modal.style.display = "block";
+
+        // AJAX request to send form data and receive response
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "http://localhost:8080/scan", true);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            // Hide the modal spinner
+            modal.style.display = "none";
+
+            var response = xhr.responseText;
+            console.log(response); // You can do whatever you want with the response here
+            var responseData;
+            try {
+              responseData = JSON.parse(response);
+            } catch (error) {
+              console.error(error);
+              return;
             }
 
-            // Create a file object from the text input value
-            var file = new File([ruleValue], "rule.txt", { type: "text/plain" });
+            // Clear the existing list
+            var resultListElement = document.getElementById("results");
+            resultListElement.innerHTML = "";
 
-            // Create a FormData object and append the file to it
-            var formData = new FormData();
-            formData.append("rule", file);
+            // Check if RepoResults is an array
+            if (Array.isArray(responseData.scan_result.RepoResults)) {
+              // Add list items to the list
+              responseData.scan_result.RepoResults.forEach(function (item) {
+                // Get the lines that are found
+                let lines = item.extra.lines;
 
-            // Show the modal spinner
-            modal.style.display = "block";
+                const base =
+                  "/Users/hoeg/Documents/security-research/hoeg.github/";
+                const githubUrl = "https://github.com/hoeg";
 
-            // AJAX request to send form data and receive response
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "http://localhost:8080/scan", true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    // Hide the modal spinner
-                    modal.style.display = "none";
+                // Extract the repository name from the input path
+                const repoIndex = item.path.indexOf("/", base.length);
+                const repoName = item.path.substring(base.length, repoIndex);
 
-                    var response = xhr.responseText;
-                    console.log(response); // You can do whatever you want with the response here
-                    var responseData;
-                    try {
-                        responseData = JSON.parse(response);
-                    } catch (error) {
-                        console.error(error);
-                        return;
-                    }
+                // Remove the base path and repository name from the input string
+                const relativePath = item.path.substring(repoIndex + 1);
 
-                    // Clear the existing list
-                    var resultListElement = document.getElementById("results");
-                    resultListElement.innerHTML = "";
+                // Create the GitHub URL
+                const githubPath = `${githubUrl}/${repoName}/tree/master/${relativePath}#L${item.start.line}`;
 
-                    // Check if RepoResults is an array
-                    if (Array.isArray(responseData.scan_result.RepoResults)) {
-                        // Add list items to the list
-                        responseData.scan_result.RepoResults.forEach(function(item) {
-                            // Get the lines that are found
-                            let lines = item.extra.lines;
+                // Create list item header with the logo, repository name, and message
+                let listItemHeader = document.createElement("div");
+                listItemHeader.className = "list-item-header";
+                let logoImg = document.createElement("img");
+                logoImg.src = "search-logo.png"; // Replace with your search logo image URL
+                listItemHeader.appendChild(logoImg);
+                listItemHeader.innerHTML +=
+                  '<a href="' +
+                  githubPath +
+                  '" target="_blank">' +
+                  relativePath +
+                  "</a>  - " +
+                  item.extra.message;
 
-                            const base = "/Users/hoeg/Documents/security-research/hoeg.github/";
-                            const githubUrl = "https://github.com/hoeg";
+                // Create list item content with the lines found
+                let listItemContent = document.createElement("div");
+                listItemContent.className = "list-item-content";
 
-                            // Extract the repository name from the input path
-                            const repoIndex = item.path.indexOf("/", base.length);
-                            const repoName = item.path.substring(base.length, repoIndex);
+                let linesPre = document.createElement("pre");
+                linesPre.textContent = lines;
 
-                            // Remove the base path and repository name from the input string
-                            const relativePath = item.path.substring(repoIndex + 1);
+                listItemContent.appendChild(linesPre);
 
-                            // Create the GitHub URL
-                            const githubPath = `${githubUrl}/${repoName}/tree/master/${relativePath}#L${item.start.line}`;
+                // Create the list item and append header and content
+                let listItem = document.createElement("li");
+                listItem.appendChild(listItemHeader);
+                listItem.appendChild(listItemContent);
 
-                            // Create list item header with the logo, repository name, and message
-                            let listItemHeader = document.createElement('div');
-                            listItemHeader.className = 'list-item-header';
-                            let logoImg = document.createElement('img');
-                            logoImg.src = 'search-logo.png'; // Replace with your search logo image URL
-                            listItemHeader.appendChild(logoImg);
-                            listItemHeader.innerHTML += '<a href="' + githubPath + '">' + relativePath + '</a>  - ' + item.extra.message;
+                // Add event listener to toggle the content visibility
+                listItemHeader.addEventListener("click", function () {
+                  listItemContent.classList.toggle("active");
+                });
 
-                            // Create list item content with the lines found
-                            let listItemContent = document.createElement('div');
-                            listItemContent.className = 'list-item-content';
+                resultListElement.appendChild(listItem);
+              });
 
-                            let linesPre = document.createElement('pre');
-                            linesPre.textContent = lines;
-
-                            listItemContent.appendChild(linesPre);
-
-                            // Create the list item and append header and content
-                            let listItem = document.createElement('li');
-                            listItem.appendChild(listItemHeader);
-                            listItem.appendChild(listItemContent);
-
-                            // Add event listener to toggle the content visibility
-                            listItemHeader.addEventListener('click', function() {
-                                listItemContent.classList.toggle('active');
-                            });
-
-                            resultListElement.appendChild(listItem);
-                        });
-                    } else {
-                        console.error("RepoResults is not an array.");
-                    }
-                }
-            };
-            xhr.send(formData); // Send the FormData object as the request body
-        });
+              // Store the scanning result in history
+              scanHistory[index].results = responseData.scan_result.RepoResults;
+              localStorage.setItem("scanHistory", JSON.stringify(scanHistory));
+              renderHistory();
+            } else {
+              console.error("RepoResults is not an array.");
+            }
+          }
+        };
+        xhr.send(formData); // Send the FormData object as the request body
+      }
     </script>
-</body>
+  </body>
 </html>
