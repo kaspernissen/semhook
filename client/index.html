@@ -273,15 +273,12 @@
                   // Create list item header with the logo, repository name, and message
                   let listItemHeader = document.createElement("div");
                   listItemHeader.className = "list-item-header";
-                  let logoImg = document.createElement("img");
-                  logoImg.src = "search-logo.png"; // Replace with your search logo image URL
-                  listItemHeader.appendChild(logoImg);
                   listItemHeader.innerHTML +=
-                    '<a href="' +
+                    '🔎  <a href="' +
                     githubPath +
                     '" target="_blank">' +
                     relativePath +
-                    "</a>  - " +
+                    "</a>   -  " +
                     item.extra.message;
 
                   // Create list item content with the lines found
