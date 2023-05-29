@@ -31,10 +31,12 @@ func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, 
 	if err != nil {
 		return "", err
 	}
+
 	scan := Scan{
 		repos: repos,
 	}
 	go performScan(ctx, &scan)
+
 	scanID, err := guid.NewV4()
 	if err != nil {
 		return "", err
@@ -80,11 +82,13 @@ func (s *Service) queryProgress(scanID string) (int, error) {
 	select {
 	case progress, ok := <-scan.progress:
 		if !ok {
+			delete(s.scans, scanID)
 			return 0, fmt.Errorf("channel closed for %s", scanID) // Channel closed, exit the function
 		}
 		return progress, nil
 	case <-scan.cancelChan:
 		fmt.Println("Cancelling async operation...")
+		delete(s.scans, scanID)
 		return 0, fmt.Errorf("scan canceled %s", scanID)
 	}
 }
@@ -94,6 +98,7 @@ func (s *Service) getResult(scanID string) (Result, error) {
 	if !found {
 		return Result{}, fmt.Errorf("no scan active for %s", scanID)
 	}
+	defer func() { delete(s.scans, scanID) }()
 	result := <-scan.result
 	return result, nil
 }
