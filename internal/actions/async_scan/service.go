@@ -6,20 +6,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
+	"sync/atomic"
 
 	"github.com/Microsoft/go-winio/pkg/guid"
 )
 
 type Service struct {
 	scans map[string]*Scan
-}
-
-type Scan struct {
-	repos      []string
-	rulePath   string
-	progress   chan int
-	result     chan (Result)
-	cancelChan chan struct{}
+	mu    sync.Mutex
 }
 
 func NewService() Service {
@@ -28,18 +23,23 @@ func NewService() Service {
 	}
 }
 
+type Scan struct {
+	repos        []string
+	rulePath     string
+	progress     int64
+	result       chan Result
+	cancelChan   chan struct{}
+	progressLock sync.Mutex
+}
+
 func newScan(repos []string) *Scan {
 	return &Scan{
 		repos:      repos,
-		progress:   make(chan int, 1),
 		result:     make(chan Result),
 		cancelChan: make(chan struct{}),
 	}
 }
 
-// Runs semgrep on all repositories cloned into the repoRoot directory
-// with the rule located at rulePath. The output of the run of each repo
-// is combined and returned as an *bytes.Reader.
 func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, error) {
 	// Get a list of all repositories in the repoRoot directory
 	repos, err := getRepositories(repoRoot)
@@ -48,66 +48,91 @@ func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, 
 	}
 
 	scan := newScan(repos)
-	go performScan(context.Background(), scan)
 
 	scanID, err := guid.NewV4()
 	if err != nil {
 		return "", err
 	}
+
+	s.mu.Lock()
 	s.scans[scanID.String()] = scan
+	s.mu.Unlock()
+
+	var eg sync.WaitGroup
+	eg.Add(1)
+
+	go func() {
+		defer eg.Done()
+		performScan(ctx, scan)
+	}()
+
 	return scanID.String(), nil
 }
 
 func performScan(ctx context.Context, scan *Scan) {
-	// Iterate over each repository and run semgrep
 	results := NewResult(scan.rulePath)
-	for i, repo := range scan.repos {
-		// Construct the command to run semgrep
-		fmt.Printf("Scanning %s\n", repo)
-		cmd := exec.CommandContext(ctx, "semgrep", "-f", scan.rulePath, "--json", repo)
-		// Run semgrep command and capture the output
-		output, err := cmd.Output()
-		if err != nil {
-			fmt.Printf("Error exec: %+v\n", err)
-			scan.result <- Result{}
-			return
-		}
-		err = results.addRepoResult(output)
-		if err != nil {
-			fmt.Printf("Error add result: %+v\n", err)
-			scan.result <- Result{}
-			return
-		}
-		if len(scan.progress) == 1 {
-			<-scan.progress
-		}
-		fmt.Printf("progress: %d\n", i)
-		scan.progress <- i
+	var scanErr error
+
+	atomic.StoreInt64(&scan.progress, 0)
+
+	var eg sync.WaitGroup
+	eg.Add(len(scan.repos))
+
+	for _, repo := range scan.repos {
+		go func(repo string) {
+			defer eg.Done()
+
+			// Construct the command to run semgrep
+			fmt.Printf("Scanning %s\n", repo)
+			cmd := exec.CommandContext(context.Background(), "semgrep", "-f", scan.rulePath, "--json", repo)
+
+			// Run semgrep command and capture the output
+			output, err := cmd.Output()
+			if err != nil {
+				fmt.Printf("Error exec: %+v\n", err)
+				scanErr = err
+				return
+			}
+
+			atomic.AddInt64(&scan.progress, 1) // Increment progress counter
+
+			err = results.addRepoResult(output)
+			if err != nil {
+				fmt.Printf("Error add result: %+v\n", err)
+				scanErr = err
+				return
+			}
+		}(repo)
 	}
-	scan.result <- results
-	close(scan.progress)
-	close(scan.result)
-	close(scan.cancelChan)
+
+	go func() {
+		eg.Wait()
+
+		// Close channels and handle errors
+		close(scan.cancelChan)
+
+		if scanErr != nil {
+			scan.result <- Result{} // Send empty result to indicate an error
+		} else {
+			scan.result <- results
+		}
+	}()
 }
 
-func (s *Service) queryProgress(scanID string) (int, error) {
+func (s *Service) queryProgress(scanID string) (int64, error) {
+	s.mu.Lock()
 	scan, found := s.scans[scanID]
+	s.mu.Unlock()
+
 	if !found {
 		return 0, fmt.Errorf("no scan active for %s", scanID)
 	}
-	fmt.Printf("found scan %+v\n", scan)
-	select {
-	case progress, ok := <-scan.progress:
-		if !ok {
-			delete(s.scans, scanID)
-			return 0, fmt.Errorf("channel closed for %s", scanID) // Channel closed, exit the function
-		}
-		return progress, nil
-	case <-scan.cancelChan:
-		fmt.Println("Cancelling async operation...")
-		delete(s.scans, scanID)
-		return 0, fmt.Errorf("scan canceled %s", scanID)
-	}
+
+	scan.progressLock.Lock()
+	defer scan.progressLock.Unlock()
+
+	progress := atomic.LoadInt64(&scan.progress)
+	return progress, nil
 }
 
 func (s *Service) getResult(scanID string) (Result, error) {
@@ -115,8 +140,11 @@ func (s *Service) getResult(scanID string) (Result, error) {
 	if !found {
 		return Result{}, fmt.Errorf("no scan active for %s", scanID)
 	}
-	defer func() { delete(s.scans, scanID) }()
+	defer func() {
+		delete(s.scans, scanID)
+	}()
 	result := <-scan.result
+	close(scan.result)
 	//return error result not ready if it is not in the queue
 	return result, nil
 }
