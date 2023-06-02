@@ -2,8 +2,8 @@ package asyncscan
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +28,7 @@ func (s *ScanHandler) HandlerStart(repoRoot string) func(c *gin.Context) {
 		}
 
 		// Create a temporary directory
-		tempDir, err := ioutil.TempDir("", "temp")
+		tempDir, err := os.MkdirTemp("", "temp")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temporary directory"})
 			return
