@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	asyncscan "github/com/hoeg/semhook/internal/actions/async_scan"
 	"github/com/hoeg/semhook/internal/actions/repo"
 	"github/com/hoeg/semhook/internal/actions/scan"
 	"github/com/hoeg/semhook/internal/actions/sync"
@@ -32,10 +33,15 @@ func Start() {
 	}))
 
 	repoRoot := repositoryRoot()
+	asyncHandler := asyncscan.NewScanHandler()
 
 	router.POST("/scan", scan.Handler(repoRoot))
 	router.GET("/sync", sync.Handler())
 	router.GET("/repo", repo.Handler())
+
+	router.POST("/ask", asyncHandler.HandlerStart(repoRoot))
+	router.GET("/check", asyncHandler.HandlerStatus())
+	router.GET("/tell", asyncHandler.HandlerGetResult())
 
 	svc := adaptors.NewHTTPService(&http.Server{
 		Addr:    fmt.Sprintf(":%s", port()),

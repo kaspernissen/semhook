@@ -11,7 +11,7 @@ import (
 )
 
 type Service struct {
-	scans map[string]Scan
+	scans map[string]*Scan
 }
 
 type Scan struct {
@@ -20,6 +20,21 @@ type Scan struct {
 	progress   chan int
 	result     chan (Result)
 	cancelChan chan struct{}
+}
+
+func NewService() Service {
+	return Service{
+		scans: make(map[string]*Scan, 0),
+	}
+}
+
+func newScan(repos []string) *Scan {
+	return &Scan{
+		repos:      repos,
+		progress:   make(chan int, 1),
+		result:     make(chan Result),
+		cancelChan: make(chan struct{}),
+	}
 }
 
 // Runs semgrep on all repositories cloned into the repoRoot directory
@@ -32,10 +47,8 @@ func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, 
 		return "", err
 	}
 
-	scan := Scan{
-		repos: repos,
-	}
-	go performScan(ctx, &scan)
+	scan := newScan(repos)
+	go performScan(context.Background(), scan)
 
 	scanID, err := guid.NewV4()
 	if err != nil {
@@ -49,29 +62,32 @@ func performScan(ctx context.Context, scan *Scan) {
 	// Iterate over each repository and run semgrep
 	results := NewResult(scan.rulePath)
 	for i, repo := range scan.repos {
-		select {
-		case <-scan.cancelChan:
-			fmt.Println("Async operation cancelled")
+		// Construct the command to run semgrep
+		fmt.Printf("Scanning %s\n", repo)
+		cmd := exec.CommandContext(ctx, "semgrep", "-f", scan.rulePath, "--json", repo)
+		// Run semgrep command and capture the output
+		output, err := cmd.Output()
+		if err != nil {
+			fmt.Printf("Error exec: %+v\n", err)
+			scan.result <- Result{}
 			return
-		default:
-			// Construct the command to run semgrep
-			cmd := exec.CommandContext(ctx, "semgrep", "-f", scan.rulePath, "--json", repo)
-
-			// Run semgrep command and capture the output
-			output, err := cmd.Output()
-			if err != nil {
-				scan.result <- Result{}
-			}
-			err = results.addRepoResult(output)
-			if err != nil {
-				scan.result <- Result{}
-			}
-			scan.progress <- i
 		}
+		err = results.addRepoResult(output)
+		if err != nil {
+			fmt.Printf("Error add result: %+v\n", err)
+			scan.result <- Result{}
+			return
+		}
+		if len(scan.progress) == 1 {
+			<-scan.progress
+		}
+		fmt.Printf("progress: %d\n", i)
+		scan.progress <- i
 	}
 	scan.result <- results
 	close(scan.progress)
 	close(scan.result)
+	close(scan.cancelChan)
 }
 
 func (s *Service) queryProgress(scanID string) (int, error) {
@@ -79,6 +95,7 @@ func (s *Service) queryProgress(scanID string) (int, error) {
 	if !found {
 		return 0, fmt.Errorf("no scan active for %s", scanID)
 	}
+	fmt.Printf("found scan %+v\n", scan)
 	select {
 	case progress, ok := <-scan.progress:
 		if !ok {
@@ -100,6 +117,7 @@ func (s *Service) getResult(scanID string) (Result, error) {
 	}
 	defer func() { delete(s.scans, scanID) }()
 	result := <-scan.result
+	//return error result not ready if it is not in the queue
 	return result, nil
 }
 
