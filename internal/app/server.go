@@ -1,50 +1,18 @@
 package app
 
 import (
-	"fmt"
-	"github/com/hoeg/semhook/internal/actions/repo"
-	"github/com/hoeg/semhook/internal/actions/scan"
-	"github/com/hoeg/semhook/internal/actions/sync"
 	"log"
-	"net/http"
 	"os"
-	"time"
 
-	"github.com/g4s8/go-lifecycle/pkg/adaptors"
 	"github.com/g4s8/go-lifecycle/pkg/lifecycle"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 )
 
 func Start() {
-	router := gin.Default()
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"POST", "GET"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "*"
-		},
-		MaxAge: 12 * time.Hour,
-	}))
-
 	repoRoot := repositoryRoot()
-	asyncHandler := scan.NewScanHandler()
+	// read github token from file
+	// call init on starhook
 
-	router.GET("/sync", sync.Handler())
-	router.GET("/repo", repo.Handler())
-
-	router.POST("/scan", asyncHandler.HandlerStart(repoRoot))
-	router.GET("/scan/progress", asyncHandler.HandlerStatus())
-	router.GET("/scan", asyncHandler.HandlerGetResult())
-
-	svc := adaptors.NewHTTPService(&http.Server{
-		Addr:    fmt.Sprintf(":%s", port()),
-		Handler: router,
-	})
+	svc := WireHTTP(repoRoot)
 
 	lf := lifecycle.New(lifecycle.DefaultConfig)
 	svc.RegisterLifecycle("web", lf)
