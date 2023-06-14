@@ -13,8 +13,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func WireHTTP(repoRoot string) *adaptors.HTTPService {
+func WireHTTP(repoRoot, authIssuer string) *adaptors.HTTPService {
 	router := gin.Default()
+
+	if authIssuer != "" {
+		router.Use(authMiddleware(authIssuer))
+	}
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},

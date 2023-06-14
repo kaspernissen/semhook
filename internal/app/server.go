@@ -9,10 +9,11 @@ import (
 
 func Start() {
 	repoRoot := repositoryRoot()
+	authIssuer := os.Getenv("SEMHOOK_AUTH_ISSUER")
 	// read github token from file
 	// call init on starhook
 
-	svc := WireHTTP(repoRoot)
+	svc := WireHTTP(repoRoot, authIssuer)
 
 	lf := lifecycle.New(lifecycle.DefaultConfig)
 	svc.RegisterLifecycle("web", lf)
@@ -28,6 +29,7 @@ func Start() {
 func port() string {
 	port := os.Getenv("SEMHOOK_PORT")
 	if port == "" {
+		log.Println("no SEMHOOK_PORT set, starting on port 8080")
 		return "8080"
 	}
 	return port
