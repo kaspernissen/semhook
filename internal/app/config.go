@@ -15,5 +15,3 @@ type Auth struct {
 	Issuer   string
 	Audience string
 }
-
-
