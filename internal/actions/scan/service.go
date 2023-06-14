@@ -3,6 +3,7 @@ package scan
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -83,13 +84,13 @@ func performScan(ctx context.Context, scan *Scan) {
 			defer eg.Done()
 
 			// Construct the command to run semgrep
-			fmt.Printf("Scanning %s\n", repo)
+			log.Printf("Scanning %s\n", repo)
 			cmd := exec.CommandContext(context.Background(), "semgrep", "-f", scan.rulePath, "--json", repo)
 
 			// Run semgrep command and capture the output
 			output, err := cmd.Output()
 			if err != nil {
-				fmt.Printf("Error exec: %+v\n", err)
+				log.Printf("Error exec: %+v\n", err)
 				scanErr = err
 				return
 			}
@@ -98,7 +99,7 @@ func performScan(ctx context.Context, scan *Scan) {
 
 			err = results.addRepoResult(output)
 			if err != nil {
-				fmt.Printf("Error add result: %+v\n", err)
+				log.Printf("Error add result: %+v\n", err)
 				scanErr = err
 				return
 			}
