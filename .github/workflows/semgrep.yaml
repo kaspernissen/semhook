@@ -30,6 +30,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: semgrep-report
+      - name: Process Report
         uses: hoeg/semgrep-report@v1.0.0
         with:
           github_secret: ${{secrets.GITHUB_TOKEN}}
