@@ -1,0 +1,17 @@
+rules:
+  - id: result-without-new-function
+    patterns:
+      - pattern-inside: |
+          func ($R $RECV) $FUNC(...) ($RETTYPE, ...) {
+            ...
+          }
+      - pattern: |
+          $RETTYPE{$VAL: ...}
+      - pattern-not: |
+          $RETTYPE{}
+    message: Creating return type with values is not allowed
+    fix: |
+        New$RETTYPE()
+    languages:
+      - golang
+    severity: WARNING
