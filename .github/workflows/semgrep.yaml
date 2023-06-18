@@ -16,7 +16,7 @@ jobs:
       - name: Scan
         run: semgrep scan -f rules -l go --json --output=semgrep.json
       - name: Process Report
-        uses: hoeg/semgrep-report@v50efd9abc82a94958bb7a3a33539d0de11b0f3f4
+        uses: hoeg/semgrep-report@50efd9abc82a94958bb7a3a33539d0de11b0f3f4
         with:
           github_secret: ${{secrets.GITHUB_TOKEN}}
           report_path: ./semgrep.json
