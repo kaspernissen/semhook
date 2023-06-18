@@ -2,6 +2,7 @@ package scan
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/Microsoft/go-winio/pkg/guid"
 )
@@ -80,4 +81,11 @@ func NewScanID() ScanID {
 		panic("rand failed - seek help!")
 	}
 	return ScanID(ID.String())
+}
+
+func NewScanIDFrom(ID string) (ScanID, error) {
+	if ID == "" {
+		return "", errors.New("missing scanid")
+	}
+	return ScanID(ID), nil
 }

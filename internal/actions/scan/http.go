@@ -49,9 +49,9 @@ func (s *ScanHandler) HandlerStart(repoRoot string) func(c *gin.Context) {
 
 func (s *ScanHandler) HandlerStatus() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		scanID := c.Query("scanid")
-		if scanID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "missing scanid parameter"})
+		scanID, err := NewScanIDFrom(c.Query("scanid"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		status, err := s.service.queryProgress(scanID)
@@ -66,9 +66,9 @@ func (s *ScanHandler) HandlerStatus() func(c *gin.Context) {
 
 func (s *ScanHandler) HandlerGetResult() func(c *gin.Context) {
 	return func(c *gin.Context) {
-		scanID := c.Query("scanid")
-		if scanID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "missing scanid parameter"})
+		scanID, err := NewScanIDFrom(c.Query("scanid"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		result, err := s.service.getResult(scanID)

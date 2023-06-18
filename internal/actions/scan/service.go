@@ -122,7 +122,7 @@ func performScan(ctx context.Context, scan *Scan) {
 	}()
 }
 
-func (s *Service) queryProgress(scanID string) (int64, error) {
+func (s *Service) queryProgress(scanID ScanID) (int64, error) {
 	s.mu.Lock()
 	scan, found := s.scans[scanID]
 	s.mu.Unlock()
@@ -138,8 +138,10 @@ func (s *Service) queryProgress(scanID string) (int64, error) {
 	return progress, nil
 }
 
-func (s *Service) getResult(scanID string) (Result, error) {
+func (s *Service) getResult(scanID ScanID) (Result, error) {
+	s.mu.Lock()
 	scan, found := s.scans[scanID]
+	s.mu.Unlock()
 	if !found {
 		return Result{}, fmt.Errorf("no scan active for %s", scanID)
 	}
