@@ -1,8 +1,6 @@
 name: Semgrep
 on:
   pull_request: {}
-  push:
-    branches: ["*", "!main"]
 
 jobs:
   semgrep:
@@ -14,9 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Scan
-        run: semgrep scan -f rules -l go --json --output=./semgrep.json .
-      - name: Report
-        uses: hoeg/semgrep-report@v1.0.0
+        run: semgrep scan -f rules -l go --json --output=semgrep.json
+      - name: Process Report
+        uses: hoeg/semgrep-report@7d30da11cbd957aa1c98093d0c501571ce165cbd
         with:
           github_secret: ${{secrets.GITHUB_TOKEN}}
           report_path: ./semgrep.json
