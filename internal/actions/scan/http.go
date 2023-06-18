@@ -20,23 +20,19 @@ func NewScanHandler() ScanHandler {
 
 func (s *ScanHandler) HandlerStart(repoRoot string) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		// Get the uploaded file
 		file, err := c.FormFile("rule")
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
 			return
 		}
 
-		// Create a temporary directory
 		tempDir, err := os.MkdirTemp("", "temp")
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temporary directory"})
 			return
 		}
 		//defer os.RemoveAll(tempDir) move to Scan struct
-
-		// Save the uploaded file to the temporary directory
-		rulePath := fmt.Sprintf("%s/%s", tempDir, file.Filename)
+		rulePath := fmt.Sprintf("%s/%s", tempDir, file.Filename) //path traversal issue here?
 		if err := c.SaveUploadedFile(file, rulePath); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 			return
@@ -47,7 +43,6 @@ func (s *ScanHandler) HandlerStart(repoRoot string) func(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to start scan %v", err)})
 			return
 		}
-		// Return a success response
 		c.JSON(http.StatusOK, gin.H{"scanid": scanID})
 	}
 }
@@ -81,8 +76,6 @@ func (s *ScanHandler) HandlerGetResult() func(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute semgrep"})
 			return
 		}
-
-		// Return a success response
 		c.JSON(http.StatusOK, gin.H{"scan_result": result})
 	}
 }
