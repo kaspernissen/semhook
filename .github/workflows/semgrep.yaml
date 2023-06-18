@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Scan
-        run: semgrep scan -f rules -l go --json --output=semgrep.json .
+        run: touch semgrep.json; semgrep scan -f rules -l go --json --output=semgrep.json .
       - uses: hoeg/semgrep-report@v1.0.0
         with:
           github_secret: ${{secrets.GITHUB_TOKEN}}
