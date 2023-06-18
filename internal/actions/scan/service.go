@@ -14,13 +14,13 @@ import (
 )
 
 type Service struct {
-	scans map[string]*Scan
+	scans map[ScanID]*Scan
 	mu    sync.Mutex
 }
 
 func NewService() Service {
 	return Service{
-		scans: make(map[string]*Scan, 0),
+		scans: make(map[ScanID]*Scan, 0),
 	}
 }
 
@@ -41,7 +41,7 @@ func newScan(repos []string) *Scan {
 	}
 }
 
-func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, error) {
+func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (ScanID, error) {
 	// Get a list of all repositories in the repoRoot directory
 	repos, err := getRepositories(repoRoot)
 	if err != nil {
@@ -50,13 +50,15 @@ func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, 
 
 	scan := newScan(repos)
 
-	scanID, err := guid.NewV4()
+	ID, err := guid.NewV4()
 	if err != nil {
 		return "", err
 	}
 
+	scanID := ScanID(ID.String())
+
 	s.mu.Lock()
-	s.scans[scanID.String()] = scan
+	s.scans[scanID] = scan
 	s.mu.Unlock()
 
 	var eg sync.WaitGroup
@@ -67,7 +69,7 @@ func (s *Service) scan(ctx context.Context, rulePath, repoRoot string) (string, 
 		performScan(ctx, scan)
 	}()
 
-	return scanID.String(), nil
+	return scanID, nil
 }
 
 func performScan(ctx context.Context, scan *Scan) {
