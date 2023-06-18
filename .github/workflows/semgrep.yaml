@@ -1,0 +1,21 @@
+name: Semgrep
+on:
+  pull_request: {}
+  push:
+    branches: ["*", "!main"]
+
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Scan
+        run: semgrep scan -f rules -l go --json --output=semgrep.json .
+      - uses: hoeg/semgrep-report@v1.0.0
+        with:
+          github_secret: ${{secrets.GITHUB_TOKEN}}
+          report_path: ./semgrep.json
