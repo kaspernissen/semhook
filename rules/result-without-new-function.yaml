@@ -5,8 +5,11 @@ rules:
           func ($R $RECV) $FUNC(...) ($RETTYPE, ...) {
             ...
           }
-      - pattern: |
-          $RETTYPE{$VAL: ...}
+      - pattern-either: 
+          - pattern: |
+              $RETTYPE{$TYPE: ...}
+          - pattern: |
+              $RETTYPE($VAL)
       - pattern-not: |
           $RETTYPE{}
     message: Creating return type with values is not allowed
