@@ -1,6 +1,11 @@
 package scan
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+
+	"github.com/Microsoft/go-winio/pkg/guid"
+)
 
 type Result struct {
 	RuleName    string
@@ -66,4 +71,21 @@ func (r *Result) addRepoResult(semgrepOutput []byte) error {
 		r.RepoResults = append(r.RepoResults, output.Results...)
 	}
 	return nil
+}
+
+type ScanID string
+
+func NewScanID() ScanID {
+	ID, err := guid.NewV4()
+	if err != nil {
+		panic("rand failed - seek help!")
+	}
+	return ScanID(ID.String())
+}
+
+func NewScanIDFrom(ID string) (ScanID, error) {
+	if ID == "" {
+		return "", errors.New("missing scanid")
+	}
+	return ScanID(ID), nil
 }
